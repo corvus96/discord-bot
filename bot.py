@@ -1,15 +1,33 @@
 import discord
 import os
 from dotenv import load_dotenv
+import requests
+import json
 
-load_dotenv()
+def get_meme():
+  response = requests.get('https://meme-api.com/gimme')
+  json_data = json.loads(response.text)
+  return json_data['url']
 
 class MyClient(discord.Client):
   async def on_ready(self):
     print('Logged on as {0}!'.format(self.user))
 
-intents = discord.Intents.default()
-intents.message_content = True
+  async def on_message(self, message):
+    if message.author == self.user:
+        return
 
-client = MyClient()
-client.run(os.getenv('TOKEN')) # Replace with your own token.
+    if message.content.startswith('$hello'):
+        await message.channel.send('Hello World!')
+
+    if message.content.startswith('$meme'):
+        await message.channel.send(get_meme())
+
+if __name__ == '__main__':
+    load_dotenv()
+
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    client = MyClient(intents=intents)
+    client.run(os.getenv('TOKEN')) # Replace with your own token.
